@@ -15,6 +15,8 @@ import webapp2
 import transform_content
 import memcache
 
+from jinja2 import Template,Environment, FileSystemLoader 
+
 ###############################################################################
 
 DEBUG = False
@@ -150,34 +152,37 @@ class BaseHandler(webapp2.RequestHandler):
         return False
 
 
-class HomeHandler(BaseHandler):
-    def get(self):
-        self.response.out.write("index")
-
-
 # class HomeHandler(BaseHandler):
-#   def get(self):
-#     if self.is_recursive_request():
-#       return
-#
-#     # Handle the input form to redirect the user to a relative url
-#     form_url = self.request.get("url")
-#     if form_url:
-#       # Accept URLs that still have a leading 'http://'
-#       inputted_url = urllib.unquote(form_url)
-#       if inputted_url.startswith(HTTP_PREFIX):
-#         inputted_url = inputted_url[len(HTTP_PREFIX):]
-#       return self.redirect("/" + inputted_url)
-#
-#     # Do this dictionary construction here, to decouple presentation from
-#     # how we store data.
-#     secure_url = None
-#     if self.request.scheme == "http":
-#       secure_url = "https://%s%s" % (self.request.host, self.request.path_qs)
-#     context = {
-#       "secure_url": secure_url,
-#     }
-#     self.response.out.write(template.render("main.html", context))
+#     def get(self):
+#         self.response.out.write("index")
+
+
+class HomeHandler(BaseHandler):
+  def get(self):
+    if self.is_recursive_request():
+      return
+
+    # Handle the input form to redirect the user to a relative url
+    form_url = self.request.get("url")
+    if form_url:
+      # Accept URLs that still have a leading 'http://'
+      inputted_url = urllib.unquote(form_url)
+      if inputted_url.startswith(HTTP_PREFIX):
+        inputted_url = inputted_url[len(HTTP_PREFIX):]
+      return self.redirect("/" + inputted_url)
+
+    # Do this dictionary construction here, to decouple presentation from
+    # how we store data.
+    secure_url = None
+    if self.request.scheme == "http":
+      secure_url = "https://%s%s" % (self.request.host, self.request.path_qs)
+    context = {
+      "secure_url": secure_url,
+    }
+
+    env = Environment(loader=FileSystemLoader('./'))
+    template = env.get_template("main.html") 
+    self.response.out.write(template.render( context))
 
 class MirrorHandler(BaseHandler):
     def get(self, base_url):
@@ -233,7 +238,7 @@ app = webapp2.WSGIApplication([
 
 def main():
     from paste import httpserver
-    httpserver.serve(app, host='*.*.*.*', port='7878')
+    httpserver.serve(app, host='0.0.0.0', port='7878')
 
 
 if __name__ == '__main__':

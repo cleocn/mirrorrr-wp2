@@ -102,5 +102,6 @@ def TransformContent(base_url, accessed_url, content):
       "base": base_url,
       "accessed_dir": accessed_dir,
     }
+    print fixed_replacement
     content = re.sub(pattern, fixed_replacement, content)
   return content
