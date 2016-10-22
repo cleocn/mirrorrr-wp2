@@ -96,10 +96,10 @@ class MirrorHandler(BaseHandler):
         assert base_url
 
         # Log the user-agent and referrer, to see who is linking to us.
-        logging.debug('User-Agent = "%s", Referrer = "%s"',
+        logging.debug('User-Agent = "%s", Referrer = "%s"  ',
                       self.request.user_agent,
                       self.request.referer)
-        logging.debug('Base_url = "%s", url = "%s"', base_url, self.request.url)
+        # logging.debug('Base_url = "%s", url = "%s"', base_url, self.request.url)
 
         translated_address = self.get_relative_url()[1:]  # remove leading /
         mirrored_url = HTTP_PREFIX + translated_address
@@ -116,7 +116,7 @@ class MirrorHandler(BaseHandler):
             cache_miss = True
             content = mirrored_content.MirroredContent.fetch_and_store(key_name, base_url,
                                                       translated_address,
-                                                      mirrored_url)
+                                                      mirrored_url,self.request.host)
         if content is None:
             return self.error(404)
 
@@ -126,6 +126,7 @@ class MirrorHandler(BaseHandler):
             self.response.headers["cache-control"] = \
                 "max-age=%d" % EXPIRATION_DELTA_SECONDS
 
+        self.response.headers["content-type"] = content.headers.get("content-type", "")
         self.response.out.write(content.data)
         # self.response.out.write("index2222")
 

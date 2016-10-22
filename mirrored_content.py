@@ -1,3 +1,4 @@
+# coding=utf8
 
 import datetime
 import hashlib
@@ -42,6 +43,7 @@ IGNORE_HEADERS = frozenset([
 TRANSFORMED_CONTENT_TYPES = frozenset([
     "text/html",
     "text/css",
+    # "application/javascript",
 ])
 
 MAX_CONTENT_SIZE = 0#10 ** 6 - 600
@@ -68,7 +70,7 @@ class MirroredContent(object):
         return memcache.get(key_name)
 
     @staticmethod
-    def fetch_and_store(key_name, base_url, translated_address, mirrored_url):
+    def fetch_and_store(key_name, base_url, translated_address, mirrored_url, host):
         """Fetch and cache a page.
 
         Args:
@@ -83,10 +85,12 @@ class MirroredContent(object):
           None if any errors occurred or the content could not be retrieved.
         """
         logging.debug("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
-        logging.debug("Fetching '%s'", mirrored_url)
+        logging.debug("Fetching '%s' , base_url is '%s' ", mirrored_url,base_url)
         headers = {
-            'content-type': 'application/json',
-            'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1'
+            # 'content-type': 'application/json',
+            'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1',
+            'Referer': 'http://'+base_url,
+            'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
             }
         try:
             response = requests.get(mirrored_url,headers=headers)
@@ -102,11 +106,69 @@ class MirroredContent(object):
 
         content = response.content
         page_content_type = adjusted_headers.get("content-type", "")
+
+        logging.info('page_content_type is %s' % page_content_type)
         for content_type in TRANSFORMED_CONTENT_TYPES:
             # startswith() because there could be a 'charset=UTF-8' in the header.
             if page_content_type.startswith(content_type):
-                content = transform_content.TransformContent(base_url, mirrored_url,
-                                                             content)
+                content = transform_content.TransformContent(base_url, mirrored_url, content)
+
+                if page_content_type.startswith("text/html"):#监听所有的请求，替换ajax地址
+                    content = content.replace('document.domain="qq.com";','void(0);');#微信的烂代码
+                    content = content.replace("<head>","""<head>
+                        <meta name="referrer" content="never">
+                        <script>
+                                (function() { 
+                                    var base_url = '""" + base_url +"""';
+                                    var proxied = window.XMLHttpRequest.prototype.open;
+                                    window.XMLHttpRequest.prototype.open = function() {
+                                        
+                                        console.log( arguments );
+                                        if (arguments[1].indexOf('http://')<0 && arguments[1].indexOf('https://')<0) {arguments[1]='http://'+base_url+arguments[1]}
+                                        
+                                        arguments[1] = arguments[1].replace('http://','/')
+                                        console.log( 'arguments xhr:',arguments );
+                                        return proxied.apply(this, [].slice.call(arguments));
+                                    };
+
+                                    var proxied_append = HTMLElement.prototype.appendChild;
+                                    HTMLElement.prototype.appendChild = function() {
+                                        
+                                        //console.log( 'appendChild:', arguments );
+                                        for (var i in arguments){
+                                            var el = arguments[i];
+                                            //debugger;
+                                            if (el.tagName==='SCRIPT'){
+                                                //debugger;
+                                                if (el.outerHTML.indexOf('http://')<0 && el.outerHTML.indexOf('https://')<0 && el.src.indexOf(base_url)<0){
+                                                    var path = el.src.replace('http://"""+host+"""','');//
+                                                    if (path==='') {
+                                                        el.onreadystatechange  = function(){
+                                                        if (el.outerHTML.indexOf('http://')<0 && el.outerHTML.indexOf('https://')<0 && el.src.indexOf(base_url)<0){
+                                                            var path = el.src.replace('http://"""+host+"""','');//
+                                                            el.src = '/"""+base_url+"""'+ path;
+                                                            el.onreadystatechange  = null;
+                                                        }
+                                                    }
+                                                    }else{
+                                                        el.src = '/"""+base_url+"""'+ path;
+                                                    }
+                                                    
+                                                    
+                                                }
+                                            }
+                                        }
+                                        //if (arguments[1].indexOf('http://')<0) {arguments[1]='http://'+arguments[1]}
+                                        
+                                        //arguments[1] = arguments[1].replace('http://','/')
+                                        console.log( 'arguments append:',arguments );
+                                        return proxied_append.apply(this, [].slice.call(arguments));
+                                    };
+
+                                })();
+                                
+                                </script>
+                        """)
                 break
 
         new_content = MirroredContent(
@@ -123,7 +185,7 @@ class MirroredContent(object):
                 logging.error('memcache.add failed: key_name = "%s", '
                               'original_url = "%s"', key_name, mirrored_url)
         else:
-            logging.warning("Content is over 1MB; not memcached")
+            logging.warning("Content is over %s ; not memcached" % MAX_CONTENT_SIZE)
 
         return new_content
 

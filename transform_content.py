@@ -22,22 +22,22 @@ import urlparse
 ################################################################################
 
 # URLs that have absolute addresses
-ABSOLUTE_URL_REGEX = r"(http(s?):)?//(?P<url>[^\"'> \t\)]+)"
+ABSOLUTE_URL_REGEX = r"(http(s?):)?//(?P<url>!(data:image)[^\"'> \t\)]+)"
 
 # URLs that are relative to the base of the current hostname.
-BASE_RELATIVE_URL_REGEX = r"/(?!(/)|(http(s?)://)|(url\())(?P<url>[^\"'> \t\)]*)"
+BASE_RELATIVE_URL_REGEX = r"/(?!(/)|(http(s?)://)|(url\())(?P<url>!(data:image)[^\"'> \t\)]*)"
 
 # URLs that have '../' or './' to start off their paths.
-TRAVERSAL_URL_REGEX = r"(?P<relative>\.(\.)?)/(?!(/)|(http(s?)://)|(url\())(?P<url>[^\"'> \t\)]*)"
+TRAVERSAL_URL_REGEX = r"(?P<relative>\.(\.)?)/(?!(/)|(http(s?)://)|(url\())(?P<url>!(data:image)[^\"'> \t\)]*)"
 
 # URLs that are in the same directory as the requested URL.
-SAME_DIR_URL_REGEX = r"(?!(/)|(http(s?)://)|(url\())(?P<url>[^\"'> \t\)]+)"
+SAME_DIR_URL_REGEX = r"(?!(/)|(http(s?)://)|(url\())(?P<url>!(data:image)[^\"'> \t\)]+)"
 
 # URL matches the root directory.
-ROOT_DIR_URL_REGEX = r"(?!//(?!>))/(?P<url>)(?=[ \t\n]*[\"'\)>/])"
+ROOT_DIR_URL_REGEX = r"(?!//(?!>))/(?P<url>!(data:image))(?=[ \t\n]*[\"'\)>/])"
 
 # Start of a tag using 'src' or 'href'
-TAG_START = r"(?i)\b(?P<tag>src|href|action|url|background)(?P<equals>[\t ]*=[\t ]*)(?P<quote>[\"']?)"
+TAG_START = r"(?i)\b(?P<tag>src|href|action|url|background)(?P<equals>[\t ]*=[\t ]*)(?P<quote>[\"'])"
 
 # Start of a CSS import
 CSS_IMPORT_START = r"(?i)@import(?P<spacing>[\t ]+)(?P<quote>[\"']?)"
@@ -97,11 +97,12 @@ def TransformContent(base_url, accessed_url, content):
   if not accessed_dir.endswith("/"):
     accessed_dir += "/"
 
-  for pattern, replacement in REPLACEMENT_REGEXES:
+  for idx,(pattern, replacement) in enumerate(REPLACEMENT_REGEXES):
     fixed_replacement = replacement % {
       "base": base_url,
       "accessed_dir": accessed_dir,
     }
-    print fixed_replacement
+    print '%s : %s . pattern is %s , fixed_replacement is %s ' % (accessed_url,idx,pattern,fixed_replacement)
+    print 'ALL:',re.findall(pattern,content)
     content = re.sub(pattern, fixed_replacement, content)
   return content
