@@ -9,48 +9,20 @@ import re
 import time
 import urllib
 import wsgiref.handlers
-
 import requests
 import webapp2
-import transform_content
-import memcache
 
 from jinja2 import Template,Environment, FileSystemLoader 
 
+import transform_content
+import mirrored_content 
+
 ###############################################################################
 
-DEBUG = False
-EXPIRATION_DELTA_SECONDS = 3600
-# DEBUG = True
-# EXPIRATION_DELTA_SECONDS = 10
-memcache = memcache.Client(['127.0.0.1:11211'])
+# DEBUG = False
+DEBUG = True
 HTTP_PREFIX = "http://"
-
-IGNORE_HEADERS = frozenset([
-    "set-cookie",
-    "expires",
-    "cache-control",
-
-    # Ignore hop-by-hop headers
-    "connection",
-    "keep-alive",
-    "proxy-authenticate",
-    "proxy-authorization",
-    "te",
-    "trailers",
-    "transfer-encoding",
-    "upgrade",
-])
-
-TRANSFORMED_CONTENT_TYPES = frozenset([
-    "text/html",
-    "text/css",
-])
-
-MAX_CONTENT_SIZE = 10 ** 6 - 600
-
-
-###############################################################################
+#############################################################################
 
 def get_url_key_name(url):
     url_hash = hashlib.sha256()
@@ -59,76 +31,6 @@ def get_url_key_name(url):
 
 
 ###############################################################################
-
-class MirroredContent(object):
-    def __init__(self, original_address, translated_address,
-                 status, headers, data, base_url):
-        self.original_address = original_address
-        self.translated_address = translated_address
-        self.status = status
-        self.headers = headers
-        self.data = data
-        self.base_url = base_url
-
-    @staticmethod
-    def get_by_key_name(key_name):
-        return memcache.get(key_name)
-
-    @staticmethod
-    def fetch_and_store(key_name, base_url, translated_address, mirrored_url):
-        """Fetch and cache a page.
-
-        Args:
-          key_name: Hash to use to store the cached page.
-          base_url: The hostname of the page that's being mirrored.
-          translated_address: The URL of the mirrored page on this site.
-          mirrored_url: The URL of the original page. Hostname should match
-            the base_url.
-
-        Returns:
-          A new MirroredContent object, if the page was successfully retrieved.
-          None if any errors occurred or the content could not be retrieved.
-        """
-        logging.debug("Fetching '%s'", mirrored_url)
-        try:
-            response = requests.get(mirrored_url)
-        except Exception:
-            logging.exception("Could not fetch URL")
-            return None
-
-        adjusted_headers = {}
-        for key, value in response.headers.iteritems():
-            adjusted_key = key.lower()
-            if adjusted_key not in IGNORE_HEADERS:
-                adjusted_headers[adjusted_key] = value
-
-        content = response.content
-        page_content_type = adjusted_headers.get("content-type", "")
-        for content_type in TRANSFORMED_CONTENT_TYPES:
-            # startswith() because there could be a 'charset=UTF-8' in the header.
-            if page_content_type.startswith(content_type):
-                content = transform_content.TransformContent(base_url, mirrored_url,
-                                                             content)
-                break
-
-        new_content = MirroredContent(
-            base_url=base_url,
-            original_address=mirrored_url,
-            translated_address=translated_address,
-            status=response.status_code,
-            headers=adjusted_headers,
-            data=content)
-
-        # Do not memcache content over 1MB
-        if len(content) < MAX_CONTENT_SIZE:
-            if not memcache.set(key_name, new_content):
-                logging.error('memcache.add failed: key_name = "%s", '
-                              'original_url = "%s"', key_name, mirrored_url)
-        else:
-            logging.warning("Content is over 1MB; not memcached")
-
-        return new_content
-
 
 ###############################################################################
 
@@ -181,11 +83,13 @@ class HomeHandler(BaseHandler):
     }
 
     env = Environment(loader=FileSystemLoader('./'))
-    template = env.get_template("main.html") 
+    template = env.get_template("home.html") 
     self.response.out.write(template.render( context))
 
 class MirrorHandler(BaseHandler):
     def get(self, base_url):
+        # MirroredContent = mirrored_content.MirroredContent()
+
         if self.is_recursive_request():
             return
 
@@ -205,12 +109,12 @@ class MirrorHandler(BaseHandler):
         key_name = get_url_key_name(mirrored_url)
         logging.info("Handling request for '%s' = '%s'", mirrored_url, key_name)
 
-        content = MirroredContent.get_by_key_name(key_name)
+        content = mirrored_content.MirroredContent.get_by_key_name(key_name)
         cache_miss = False
         if content is None:
             logging.debug("Cache miss")
             cache_miss = True
-            content = MirroredContent.fetch_and_store(key_name, base_url,
+            content = mirrored_content.MirroredContent.fetch_and_store(key_name, base_url,
                                                       translated_address,
                                                       mirrored_url)
         if content is None:
