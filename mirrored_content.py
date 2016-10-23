@@ -183,6 +183,14 @@ class MirroredContent(object):
                                     return result;
                                 }*/
 
+
+                                var proxied_eval = window.prototype.eval; 
+                                window.prototype.eval  = function(){
+                                    var result = proxied_eval.apply(this, [].slice.call(arguments));
+                                    console.log('eval',arguments)
+                                    return result;
+                                }
+
                             })();
                             
                         </script>
