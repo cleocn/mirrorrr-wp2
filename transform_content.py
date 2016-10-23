@@ -22,19 +22,19 @@ import urlparse
 ################################################################################
 
 # URLs that have absolute addresses
-ABSOLUTE_URL_REGEX = r"(http(s?):)?//(?P<url>!(data:image)[^\"'> \t\)]+)"
+ABSOLUTE_URL_REGEX = r"(http(s?):)?//(?P<url>(?!data:image)[^\"'> \t\)]+)"
 
 # URLs that are relative to the base of the current hostname.
-BASE_RELATIVE_URL_REGEX = r"/(?!(/)|(http(s?)://)|(url\())(?P<url>!(data:image)[^\"'> \t\)]*)"
+BASE_RELATIVE_URL_REGEX = r"/(?!(/)|(http(s?)://)|(url\())(?P<url>(?!data:image)[^\"'> \t\)]*)"
 
 # URLs that have '../' or './' to start off their paths.
-TRAVERSAL_URL_REGEX = r"(?P<relative>\.(\.)?)/(?!(/)|(http(s?)://)|(url\())(?P<url>!(data:image)[^\"'> \t\)]*)"
+TRAVERSAL_URL_REGEX = r"(?P<relative>\.(\.)?)/(?!(/)|(http(s?)://)|(url\())(?P<url>(?!data:image)[^\"'> \t\)]*)"
 
 # URLs that are in the same directory as the requested URL.
-SAME_DIR_URL_REGEX = r"(?!(/)|(http(s?)://)|(url\())(?P<url>!(data:image)[^\"'> \t\)]+)"
+SAME_DIR_URL_REGEX = r"(?!(/)|(http(s?)://)|(url\())(?P<url>(?!data:image)[^\"'> \t\)]+)"
 
 # URL matches the root directory.
-ROOT_DIR_URL_REGEX = r"(?!//(?!>))/(?P<url>!(data:image))(?=[ \t\n]*[\"'\)>/])"
+ROOT_DIR_URL_REGEX = r"(?!//(?!>))/(?P<url>(?!data:image))(?=[ \t\n]*[\"'\)>/])"
 
 # Start of a tag using 'src' or 'href'
 TAG_START = r"(?i)\b(?P<tag>src|href|action|url|background)(?P<equals>[\t ]*=[\t ]*)(?P<quote>[\"'])"
@@ -87,6 +87,9 @@ REPLACEMENT_REGEXES = [
 
   (CSS_URL_START + ABSOLUTE_URL_REGEX,
       "url(\g<quote>/\g<url>"),
+
+  # (ABSOLUTE_URL_REGEX,
+  #     "/\g<url>")
 ]
 
 ################################################################################

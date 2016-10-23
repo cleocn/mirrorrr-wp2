@@ -46,12 +46,16 @@ python pymonitor.py main.py
 打开 http://localhost:7878/
 
 示例：
+20160621-134527  ， human-pc
 
-maka：http://localhost:7878/www.rabbitpre.com/m/niQNz2N
+maka(不要用localhost)：http://(本机计算机名):7878/u297909.viewer.maka.im/k/9TQ4VU79
 
-eqx：http://192.168.1.71:7878/h5.eqxiu.com/s/0MA56gJZ
+eqx：http://localhost:7878/h5.eqxiu.com/s/0MA56gJZ
 
-微信文章：http://human-pc:7878/mp.weixin.qq.com/s?safe=0&__biz=MjM5NTc1NTA3OA==&mid=2650237870&idx=1&sn=f9da4f30e9e571148bbb5343db0c1f0b&chksm=bef06e878987e791e43c03de0471572b776f56bce19a408622390a25fbf42586eb26d59cd5f2&scene=0#wechat_redirect
+
+微信文章：http://localhost:7878/mp.weixin.qq.com/s?safe=0&__biz=MjM5NTc1NTA3OA==&mid=2650237870&idx=1&sn=f9da4f30e9e571148bbb5343db0c1f0b&chksm=bef06e878987e791e43c03de0471572b776f56bce19a408622390a25fbf42586eb26d59cd5f2&scene=0#wechat_redirect
 
 rp： http://localhost:7878/www.rabbitpre.com/m/niQNz2N
+
+cnbeta：http://localhost:7878/www.cnbeta.com
 

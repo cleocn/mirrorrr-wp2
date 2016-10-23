@@ -118,56 +118,74 @@ class MirroredContent(object):
                     content = content.replace("<head>","""<head>
                         <meta name="referrer" content="never">
                         <script>
-                                (function() { 
-                                    var base_url = '""" + base_url +"""';
-                                    var proxied = window.XMLHttpRequest.prototype.open;
-                                    window.XMLHttpRequest.prototype.open = function() {
-                                        
-                                        console.log( arguments );
-                                        if (arguments[1].indexOf('http://')<0 && arguments[1].indexOf('https://')<0) {arguments[1]='http://'+base_url+arguments[1]}
-                                        
-                                        arguments[1] = arguments[1].replace('http://','/')
-                                        console.log( 'arguments xhr:',arguments );
-                                        return proxied.apply(this, [].slice.call(arguments));
-                                    };
 
-                                    var proxied_append = HTMLElement.prototype.appendChild;
-                                    HTMLElement.prototype.appendChild = function() {
-                                        
-                                        //console.log( 'appendChild:', arguments );
-                                        for (var i in arguments){
-                                            var el = arguments[i];
+                            function do_poster_script_onload(el){
+                                console.log('script el:',el);
+                                if (el.outerHTML.indexOf('http://')<0 && el.outerHTML.indexOf('https://')<0 && el.src.indexOf(base_url)<0){
+                                    var path = el.src.replace('http://"""+host+"""','');//
+                                    el.src = '/"""+base_url+"""'+ path;
+                                    //el.onloadstart  = null;
+                                }
+                            }
+
+                            (function() { 
+                                var base_url = '""" + base_url +"""';
+                                var proxied = window.XMLHttpRequest.prototype.open;
+                                window.XMLHttpRequest.prototype.open = function() {
+                                    
+                                    console.log( arguments );
+                                    if (arguments[1].indexOf('http://')<0 && arguments[1].indexOf('https://')<0) {arguments[1]='http://'+base_url+arguments[1]}
+                                    
+                                    arguments[1] = arguments[1].replace('http://','/')
+                                    console.log( 'arguments xhr:',arguments );
+                                    return proxied.apply(this, [].slice.call(arguments));
+                                };
+
+                                var proxied_append = HTMLElement.prototype.appendChild;
+                                HTMLElement.prototype.appendChild = function() {
+                                    
+                                    //console.log( 'appendChild:', arguments );
+                                    for (var i in arguments){
+                                        var el = arguments[i];
+                                        //debugger;
+                                        if (el.tagName==='SCRIPT'){
                                             //debugger;
-                                            if (el.tagName==='SCRIPT'){
-                                                //debugger;
-                                                if (el.outerHTML.indexOf('http://')<0 && el.outerHTML.indexOf('https://')<0 && el.src.indexOf(base_url)<0){
-                                                    var path = el.src.replace('http://"""+host+"""','');//
-                                                    if (path==='') {
-                                                        el.onreadystatechange  = function(){
-                                                        if (el.outerHTML.indexOf('http://')<0 && el.outerHTML.indexOf('https://')<0 && el.src.indexOf(base_url)<0){
-                                                            var path = el.src.replace('http://"""+host+"""','');//
-                                                            el.src = '/"""+base_url+"""'+ path;
-                                                            el.onreadystatechange  = null;
-                                                        }
-                                                    }
-                                                    }else{
-                                                        el.src = '/"""+base_url+"""'+ path;
-                                                    }
-                                                    
-                                                    
+                                            if (el.outerHTML.indexOf('http://')<0 && el.outerHTML.indexOf('https://')<0 && el.src.indexOf(base_url)<0){
+                                                var path = el.src.replace('http://"""+host+"""','');//
+                                                console.log('path:',path);
+                                                if (path==='') {
+                                                   el.onbeforeonload = function(){
+                                                        console.log('onbeforeonloadNew:',el);
+                                                   }
+                                                   el.onerror = function(e){
+                                                        console.log('onerror',e)
+                                                   }
+                                                }else{
+                                                    el.src = '/"""+base_url+"""'+ path;
                                                 }
+                                                
+                                                
                                             }
                                         }
-                                        //if (arguments[1].indexOf('http://')<0) {arguments[1]='http://'+arguments[1]}
-                                        
-                                        //arguments[1] = arguments[1].replace('http://','/')
-                                        console.log( 'arguments append:',arguments );
-                                        return proxied_append.apply(this, [].slice.call(arguments));
-                                    };
+                                    }
+                                    //if (arguments[1].indexOf('http://')<0) {arguments[1]='http://'+arguments[1]}
+                                    
+                                    //arguments[1] = arguments[1].replace('http://','/')
+                                    console.log( 'arguments append:',arguments );
+                                    return proxied_append.apply(this, [].slice.call(arguments));
+                                };
 
-                                })();
-                                
-                                </script>
+                                /*
+                                var proxied_onload = HTMLElement.prototype.onload; 
+                                HTMLElement.prototype.onload  = function(){
+                                    var result = proxied_onload.apply(this, [].slice.call(arguments));
+                                    do_poster_script_onload(this);
+                                    return result;
+                                }*/
+
+                            })();
+                            
+                        </script>
                         """)
                 break
 
