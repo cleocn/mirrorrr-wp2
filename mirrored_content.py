@@ -70,7 +70,7 @@ class MirroredContent(object):
         return memcache.get(key_name)
 
     @staticmethod
-    def fetch_and_store(key_name, base_url, translated_address, mirrored_url, host):
+    def fetch_and_store(key_name, base_url, translated_address, mirrored_url, host,handler):
         """Fetch and cache a page.
 
         Args:
@@ -89,11 +89,16 @@ class MirroredContent(object):
         headers = {
             # 'content-type': 'application/json',
             'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1',
-            'Referer': 'http://'+base_url,
+            # 'Referer': 'http://'+base_url,
             'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
             }
         try:
-            response = requests.get(mirrored_url,headers=headers)
+            if handler.request.method == 'GET':
+                response = requests.get(mirrored_url,headers=headers)
+            
+            if handler.request.method == 'POST':
+                logging.debug('handler.request postitems : %s'%handler.request.POST.items())
+                response = requests.post(mirrored_url,headers=headers,data=handler.request.POST.items())
         except Exception:
             logging.exception("Could not fetch URL")
             return None
@@ -115,6 +120,8 @@ class MirroredContent(object):
 
                 if page_content_type.startswith("text/html"):#监听所有的请求，替换ajax地址
                     content = content.replace('document.domain="qq.com";','void(0);');#微信的烂代码
+                    content = content.replace('</body>','<script type="text/javascript" src="http://pingjs.qq.com/h5/stats.js" name="MTAH5" sid="500324497" cid="500331564" opts="{&quot;senseHash&quot;:false}" ></script></body>');#微信的烂代码
+                    content = content.replace('location.href.indexOf("safe=0") == -1 ','false') #微信的蓝代码
                     content = content.replace("<head>","""<head>
                         <meta name="referrer" content="never">
                         <script>
@@ -179,17 +186,22 @@ class MirroredContent(object):
                                 var proxied_onload = HTMLElement.prototype.onload; 
                                 HTMLElement.prototype.onload  = function(){
                                     var result = proxied_onload.apply(this, [].slice.call(arguments));
-                                    do_poster_script_onload(this);
+                                    //do_poster_script_onload(this);
+                                    console.log('poster onload');
                                     return result;
                                 }*/
 
 
-                                var proxied_eval = window.prototype.eval; 
-                                window.prototype.eval  = function(){
-                                    var result = proxied_eval.apply(this, [].slice.call(arguments));
-                                    console.log('eval',arguments)
+                                var D = window.localStorage.getItem;
+                                window.localStorage.getItem = function() {
+                                    var result = D.call(window.localStorage, [].slice.call(arguments));
+                                    //console.log('getItem',result);
+                                    if (result)
+                                        result = result.replace('document.domain="qq.com";','void(0);');//#微信的烂代码
+
                                     return result;
-                                }
+                                };
+
 
                             })();
                             

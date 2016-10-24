@@ -22,7 +22,7 @@ import urlparse
 ################################################################################
 
 # URLs that have absolute addresses
-ABSOLUTE_URL_REGEX = r"(http(s?):)?//(?P<url>(?!data:image)[^\"'> \t\)]+)"
+ABSOLUTE_URL_REGEX = r"(http(s?):)?//(?P<url>(?!data:image)(?!mmbiz.qpic.cn/mmbiz_jpg)[^\"'> \t\)]+)"
 
 # URLs that are relative to the base of the current hostname.
 BASE_RELATIVE_URL_REGEX = r"/(?!(/)|(http(s?)://)|(url\())(?P<url>(?!data:image)[^\"'> \t\)]*)"
@@ -90,6 +90,9 @@ REPLACEMENT_REGEXES = [
 
   # (ABSOLUTE_URL_REGEX,
   #     "/\g<url>")
+  # (http://res.wx.qq.com/mmbizwap/zh_CN/htmledition/js/biz_wap/moon3138d7.js
+  (r"http://res.wx.qq.com/mmbizwap/zh_CN/htmledition/js/biz_wap/moon(?P<md5>[^\"'> \t\)]+)",
+    "/res.wx.qq.com/mmbizwap/zh_CN/htmledition/js/biz_wap/moon<md5>"),
 ]
 
 ################################################################################
@@ -105,7 +108,7 @@ def TransformContent(base_url, accessed_url, content):
       "base": base_url,
       "accessed_dir": accessed_dir,
     }
-    print '%s : %s . pattern is %s , fixed_replacement is %s ' % (accessed_url,idx,pattern,fixed_replacement)
-    print 'ALL:',re.findall(pattern,content)
+    # print '%s : %s . pattern is %s , fixed_replacement is %s ' % (accessed_url,idx,pattern,fixed_replacement)
+    # print 'ALL:',re.findall(pattern,content)
     content = re.sub(pattern, fixed_replacement, content)
   return content

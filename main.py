@@ -16,7 +16,7 @@ from jinja2 import Template,Environment, FileSystemLoader
 
 import transform_content
 import mirrored_content 
-
+import mtah5
 ###############################################################################
 
 # DEBUG = False
@@ -58,6 +58,14 @@ class BaseHandler(webapp2.RequestHandler):
 #     def get(self):
 #         self.response.out.write("index")
 
+class MtaHandler(BaseHandler):
+    def get(self):
+        urls = self.request.get("urls")
+        mta = mtah5.MtaH5()
+        self.response.headers["content-type"] = "application/json; charset=UTF-8"
+        json = mta.ctr_page(urls)
+        logging.debug(json)
+        self.response.out.write(json)
 
 class HomeHandler(BaseHandler):
   def get(self):
@@ -87,6 +95,12 @@ class HomeHandler(BaseHandler):
     self.response.out.write(template.render( context))
 
 class MirrorHandler(BaseHandler):
+    def post(self, base_url):
+        # self.get(self, base_url)
+        logging.debug('------------------------------------------',self.request)
+        # self.response.out.write('content.data')
+        self.get(base_url)
+
     def get(self, base_url):
         # MirroredContent = mirrored_content.MirroredContent()
 
@@ -96,9 +110,7 @@ class MirrorHandler(BaseHandler):
         assert base_url
 
         # Log the user-agent and referrer, to see who is linking to us.
-        logging.debug('User-Agent = "%s", Referrer = "%s"  ',
-                      self.request.user_agent,
-                      self.request.referer)
+        # logging.debug('User-Agent = "%s", Referrer = "%s"  ', self.request.user_agent, self.request.referer)
         # logging.debug('Base_url = "%s", url = "%s"', base_url, self.request.url)
 
         translated_address = self.get_relative_url()[1:]  # remove leading /
@@ -116,7 +128,7 @@ class MirrorHandler(BaseHandler):
             cache_miss = True
             content = mirrored_content.MirroredContent.fetch_and_store(key_name, base_url,
                                                       translated_address,
-                                                      mirrored_url,self.request.host)
+                                                      mirrored_url,self.request.host,self)
         if content is None:
             return self.error(404)
 
@@ -135,7 +147,7 @@ class MirrorHandler(BaseHandler):
 
 app = webapp2.WSGIApplication([
     (r"/", HomeHandler),
-    (r"/main", HomeHandler),
+    (r"/mta", MtaHandler),
     (r"/_ah/warmup", WarmupHandler),
     (r"/([^/]+).*", MirrorHandler),
 ], debug=DEBUG)
