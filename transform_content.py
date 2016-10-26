@@ -25,19 +25,19 @@ import urlparse
 ABSOLUTE_URL_REGEX = r"(http(s?):)?//(?P<url>(?!data:image)(?!mmbiz.qpic.cn/mmbiz_)[^\"'> \t\)]+)"
 
 # URLs that are relative to the base of the current hostname.
-BASE_RELATIVE_URL_REGEX = r"/(?!(/)|(http(s?)://)|(url\())(?P<url>(?!data:image)[^\"'> \t\)]*)"
+BASE_RELATIVE_URL_REGEX = r"/(?!(/)|(http(s?)://)|(url\())(?P<url>(?!data:image)(?!javascript)[^\"'> \t\)]*)"
 
 # URLs that have '../' or './' to start off their paths.
-TRAVERSAL_URL_REGEX = r"(?P<relative>\.(\.)?)/(?!(/)|(http(s?)://)|(url\())(?P<url>(?!data:image)[^\"'> \t\)]*)"
+TRAVERSAL_URL_REGEX = r"(?P<relative>\.(\.)?)/(?!(/)|(http(s?)://)|(url\())(?P<url>(?!data:image)(?!javascript)[^\"'> \t\)]*)"
 
 # URLs that are in the same directory as the requested URL.
-SAME_DIR_URL_REGEX = r"(?!(/)|(http(s?)://)|(url\())(?P<url>(?!data:image)[^\"'> \t\)]+)"
+SAME_DIR_URL_REGEX = r"(?!(/)|(http(s?)://)|(url\())(?P<url>(?!data:image)(?!javascript)[^\"'> \t\)]+)"
 
 # URL matches the root directory.
-ROOT_DIR_URL_REGEX = r"(?!//(?!>))/(?P<url>(?!data:image))(?=[ \t\n]*[\"'\)>/])"
+ROOT_DIR_URL_REGEX = r"(?!//(?!>))/(?P<url>(?!data:image)(?!javascript))(?=[ \t\n]*[\"'\)>/])"
 
 # Start of a tag using 'src' or 'href'
-TAG_START = r"(?i)\b(?P<tag>src|href|action|url|background)(?P<equals>[\t ]*=[\t ]*)(?P<quote>[\"'])"
+TAG_START = r"(?i)\b(?P<tag>src|href|action|url|background)(?P<equals>[\t ]*=[\t ]*)(?P<quote>(?!javascript)[\"'])"
 
 # Start of a CSS import
 CSS_IMPORT_START = r"(?i)@import(?P<spacing>[\t ]+)(?P<quote>[\"']?)"
