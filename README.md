@@ -29,7 +29,15 @@ python -m pip install watchdog -i http://pypi.doubanio.com/simple/  --trusted-ho
 
 python -m pip install short_url -i http://pypi.doubanio.com/simple/  --trusted-host pypi.doubanio.com
 
-
+pip install requests
+pip install webapp2
+pip install WebOb
+pip install Paste
+pip install python-memcached
+pip install Jinja2
+pip install livereload
+pip install supervisor
+pip install watchdog
 
 === 其他依赖 === 
 

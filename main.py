@@ -12,6 +12,7 @@ import wsgiref.handlers
 import requests
 import webapp2
 import copy
+import os
 from jinja2 import Template,Environment, FileSystemLoader 
 
 
@@ -131,8 +132,7 @@ class MirrorHandler(BaseHandler):
         # Log the user-agent and referrer, to see who is linking to us.
         # logging.debug('User-Agent = "%s", Referrer = "%s"  ', self.request.user_agent, self.request.referer)
         logging.debug('Base_url = "%s", url = "%s"', base_url, self.request.url)
-
-        translated_address = self.get_relative_url()[13:]  # remove leading /
+        translated_address = self.get_relative_url()[self.get_relative_url().find("/",1)+1:]  # remove leading /
         mirrored_url = HTTP_PREFIX + translated_address
 
         # Use sha256 hash instead of mirrored url for the key name, since key
@@ -175,7 +175,7 @@ app = webapp2.WSGIApplication([
 
 def main():
     from paste import httpserver
-    httpserver.serve(app, host='0.0.0.0', port='7878')
+    httpserver.serve(app, host='0.0.0.0', port=  os.environ.get('MIRRORRR_PORT') or '7878')
 
 
 if __name__ == '__main__':

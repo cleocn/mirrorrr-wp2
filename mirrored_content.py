@@ -140,11 +140,11 @@ class MirroredContent(object):
                                 var proxied = window.XMLHttpRequest.prototype.open;
                                 window.XMLHttpRequest.prototype.open = function() {
                                     
-                                    console.log( arguments );
+                                    //console.log( arguments );
                                     if (arguments[1].indexOf('http://')<0 && arguments[1].indexOf('https://')<0) {arguments[1]='http://'+base_url+arguments[1]}
                                     
                                     arguments[1] = arguments[1].replace('http://','/"""+shorturl+"""/')
-                                    console.log( 'arguments xhr:',arguments );
+                                    //console.log( 'arguments xhr:',arguments );
                                     return proxied.apply(this, [].slice.call(arguments));
                                 };
 
@@ -162,10 +162,10 @@ class MirroredContent(object):
                                                 console.log('path:',path);
                                                 if (path==='') {
                                                    el.onbeforeonload = function(){
-                                                        console.log('onbeforeonloadNew:',el);
+                                                        //console.log('onbeforeonloadNew:',el);
                                                    }
                                                    el.onerror = function(e){
-                                                        console.log('onerror',e)
+                                                        //console.log('onerror',e)
                                                    }
                                                 }else{
                                                     el.src = '/"""+shorturl+"""/"""+base_url+"""'+ path;
@@ -178,7 +178,7 @@ class MirroredContent(object):
                                     //if (arguments[1].indexOf('http://')<0) {arguments[1]='http://'+arguments[1]}
                                     
                                     //arguments[1] = arguments[1].replace('http://','/')
-                                    console.log( 'arguments append:',arguments );
+                                    //console.log( 'arguments append:',arguments );
                                     return proxied_append.apply(this, [].slice.call(arguments));
                                 };
 
@@ -187,7 +187,7 @@ class MirroredContent(object):
                                 HTMLElement.prototype.onload  = function(){
                                     var result = proxied_onload.apply(this, [].slice.call(arguments));
                                     //do_poster_script_onload(this);
-                                    console.log('poster onload');
+                                    //console.log('poster onload');
                                     return result;
                                 }*/
 
