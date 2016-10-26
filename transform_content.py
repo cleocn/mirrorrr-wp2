@@ -22,7 +22,7 @@ import urlparse
 ################################################################################
 
 # URLs that have absolute addresses
-ABSOLUTE_URL_REGEX = r"(http(s?):)?//(?P<url>(?!data:image)(?!mmbiz.qpic.cn/mmbiz_jpg)[^\"'> \t\)]+)"
+ABSOLUTE_URL_REGEX = r"(http(s?):)?//(?P<url>(?!data:image)(?!mmbiz.qpic.cn/mmbiz_)[^\"'> \t\)]+)"
 
 # URLs that are relative to the base of the current hostname.
 BASE_RELATIVE_URL_REGEX = r"/(?!(/)|(http(s?)://)|(url\())(?P<url>(?!data:image)[^\"'> \t\)]*)"

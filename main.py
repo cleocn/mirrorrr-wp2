@@ -118,7 +118,7 @@ class MirrorHandler(BaseHandler):
         # self.get(self, base_url)
         logging.debug('------------------------------------------',self.request)
         # self.response.out.write('content.data')
-        self.get(base_url)
+        self.get(shorturl,base_url)
 
     def get(self,shorturl, base_url):
         # MirroredContent = mirrored_content.MirroredContent()
@@ -175,8 +175,8 @@ app = webapp2.WSGIApplication([
 
 def main():
     from paste import httpserver
-    logging.debug('port',os.getenv('MIRRORRR_PORT','88'))
-    httpserver.serve(app, host='0.0.0.0', port=  os.getenv('MIRRORRR_PORT','88'))
+    logging.debug('getenv port %s'%os.getenv('MIRRORRR_PORT'))
+    httpserver.serve(app, host='0.0.0.0', port=  os.getenv('MIRRORRR_PORT','7878'))
 
 
 if __name__ == '__main__':
