@@ -175,7 +175,8 @@ app = webapp2.WSGIApplication([
 
 def main():
     from paste import httpserver
-    httpserver.serve(app, host='0.0.0.0', port=  os.environ.get('MIRRORRR_PORT') or '7878')
+    logging.debug('port',os.getenv('MIRRORRR_PORT','88'))
+    httpserver.serve(app, host='0.0.0.0', port=  os.getenv('MIRRORRR_PORT','88'))
 
 
 if __name__ == '__main__':
