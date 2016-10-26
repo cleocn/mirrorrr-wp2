@@ -85,10 +85,11 @@ class MirroredContent(object):
           None if any errors occurred or the content could not be retrieved.
         """
         logging.debug("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
-        logging.debug("Fetching '%s' , base_url is '%s' ", mirrored_url,base_url)
+        logging.debug("Fetching '%s' , base_url is '%s' ,UA is %s ", mirrored_url,base_url,handler.request.headers["User-Agent"])
+
         headers = {
             # 'content-type': 'application/json',
-            'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1',
+            'User-Agent': handler.request.headers["User-Agent"] or 'Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1',
             # 'Referer': 'http://'+base_url,
             'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
             }
