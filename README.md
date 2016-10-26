@@ -27,6 +27,7 @@ python -m pip install supervisor -i http://pypi.doubanio.com/simple/  --trusted-
 
 python -m pip install watchdog -i http://pypi.doubanio.com/simple/  --trusted-host pypi.doubanio.com
 
+python -m pip install short_url -i http://pypi.doubanio.com/simple/  --trusted-host pypi.doubanio.com
 
 
 
@@ -63,3 +64,10 @@ rp： http://localhost:7878/www.rabbitpre.com/m/niQNz2N
 
 cnbeta：http://localhost:7878/www.cnbeta.com
 
+
+====API
+
+#http://localhost:7878/mta?api=ctr_core_data&start_date=2015-10-24&end_date=2016-10-25&idx=pv,uv,vv,iv&urls=http://localhost:7878/h5.eqxiu.com/s/0MA56gJZ
+
+
+#http://localhost:7878/mta?api=ctr_page&start_date=2015-10-24&end_date=2016-10-25&idx=pv,uv,vv,iv&urls=http://localhost:7878/h5.eqxiu.com/s/0MA56gJZ

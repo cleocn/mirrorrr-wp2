@@ -11,12 +11,14 @@ import urllib
 import wsgiref.handlers
 import requests
 import webapp2
-
+import copy
 from jinja2 import Template,Environment, FileSystemLoader 
+
 
 import transform_content
 import mirrored_content 
 import mtah5
+import shorturl
 ###############################################################################
 
 # DEBUG = False
@@ -60,11 +62,11 @@ class BaseHandler(webapp2.RequestHandler):
 
 class MtaHandler(BaseHandler):
     def get(self):
-        urls = self.request.get("urls")
-        mta = mtah5.MtaH5()
-        self.response.headers["content-type"] = "application/json; charset=UTF-8"
-        json = mta.ctr_page(urls)
+        mta = mtah5.MtaH5()        
+        json = mta.api(self.request.params)
+        logging.debug("request:",self.request.params)
         logging.debug(json)
+        self.response.headers["content-type"] = "application/json; charset=UTF-8"
         self.response.out.write(json)
 
 class HomeHandler(BaseHandler):
@@ -94,14 +96,30 @@ class HomeHandler(BaseHandler):
     template = env.get_template("home.html") 
     self.response.out.write(template.render( context))
 
+  def post(self):
+    if self.is_recursive_request():
+      return
+
+    # Handle the input form to redirect the user to a relative url
+    form_url = self.request.get("url")
+    if form_url:
+      # Accept URLs that still have a leading 'http://'
+      inputted_url = urllib.unquote(form_url)
+      if inputted_url.startswith(HTTP_PREFIX):
+        inputted_url = inputted_url[len(HTTP_PREFIX):]
+
+      s_url = shorturl.get_hash_key(inputted_url) # 'kekmyzyk'     
+      logging.debug("s_url:",s_url[0])
+      return self.redirect("/" + s_url[0] + "/" +inputted_url)
+
 class MirrorHandler(BaseHandler):
-    def post(self, base_url):
+    def post(self,shorturl, base_url):
         # self.get(self, base_url)
         logging.debug('------------------------------------------',self.request)
         # self.response.out.write('content.data')
         self.get(base_url)
 
-    def get(self, base_url):
+    def get(self,shorturl, base_url):
         # MirroredContent = mirrored_content.MirroredContent()
 
         if self.is_recursive_request():
@@ -109,11 +127,12 @@ class MirrorHandler(BaseHandler):
 
         assert base_url
 
+
         # Log the user-agent and referrer, to see who is linking to us.
         # logging.debug('User-Agent = "%s", Referrer = "%s"  ', self.request.user_agent, self.request.referer)
-        # logging.debug('Base_url = "%s", url = "%s"', base_url, self.request.url)
+        logging.debug('Base_url = "%s", url = "%s"', base_url, self.request.url)
 
-        translated_address = self.get_relative_url()[1:]  # remove leading /
+        translated_address = self.get_relative_url()[13:]  # remove leading /
         mirrored_url = HTTP_PREFIX + translated_address
 
         # Use sha256 hash instead of mirrored url for the key name, since key
@@ -128,7 +147,7 @@ class MirrorHandler(BaseHandler):
             cache_miss = True
             content = mirrored_content.MirroredContent.fetch_and_store(key_name, base_url,
                                                       translated_address,
-                                                      mirrored_url,self.request.host,self)
+                                                      mirrored_url,self.request.host,self,shorturl)
         if content is None:
             return self.error(404)
 
@@ -147,9 +166,10 @@ class MirrorHandler(BaseHandler):
 
 app = webapp2.WSGIApplication([
     (r"/", HomeHandler),
+    (r"/home", HomeHandler),
     (r"/mta", MtaHandler),
     (r"/_ah/warmup", WarmupHandler),
-    (r"/([^/]+).*", MirrorHandler),
+    (r"/([^/]+)/([^/]+).*", MirrorHandler),
 ], debug=DEBUG)
 
 

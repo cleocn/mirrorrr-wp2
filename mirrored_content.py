@@ -70,7 +70,7 @@ class MirroredContent(object):
         return memcache.get(key_name)
 
     @staticmethod
-    def fetch_and_store(key_name, base_url, translated_address, mirrored_url, host,handler):
+    def fetch_and_store(key_name, base_url, translated_address, mirrored_url, host,handler,shorturl):
         """Fetch and cache a page.
 
         Args:
@@ -116,7 +116,7 @@ class MirroredContent(object):
         for content_type in TRANSFORMED_CONTENT_TYPES:
             # startswith() because there could be a 'charset=UTF-8' in the header.
             if page_content_type.startswith(content_type):
-                content = transform_content.TransformContent(base_url, mirrored_url, content)
+                content = transform_content.TransformContent(base_url, mirrored_url, content,shorturl)
 
                 if page_content_type.startswith("text/html"):#监听所有的请求，替换ajax地址
                     content = content.replace('document.domain="qq.com";','void(0);');#微信的烂代码
@@ -130,7 +130,7 @@ class MirroredContent(object):
                                 console.log('script el:',el);
                                 if (el.outerHTML.indexOf('http://')<0 && el.outerHTML.indexOf('https://')<0 && el.src.indexOf(base_url)<0){
                                     var path = el.src.replace('http://"""+host+"""','');//
-                                    el.src = '/"""+base_url+"""'+ path;
+                                    el.src = '/"""+shorturl+"""/"""+base_url+"""'+ path;
                                     //el.onloadstart  = null;
                                 }
                             }
@@ -143,7 +143,7 @@ class MirroredContent(object):
                                     console.log( arguments );
                                     if (arguments[1].indexOf('http://')<0 && arguments[1].indexOf('https://')<0) {arguments[1]='http://'+base_url+arguments[1]}
                                     
-                                    arguments[1] = arguments[1].replace('http://','/')
+                                    arguments[1] = arguments[1].replace('http://','/"""+shorturl+"""/')
                                     console.log( 'arguments xhr:',arguments );
                                     return proxied.apply(this, [].slice.call(arguments));
                                 };
@@ -168,7 +168,7 @@ class MirroredContent(object):
                                                         console.log('onerror',e)
                                                    }
                                                 }else{
-                                                    el.src = '/"""+base_url+"""'+ path;
+                                                    el.src = '/"""+shorturl+"""/"""+base_url+"""'+ path;
                                                 }
                                                 
                                                 

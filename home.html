@@ -17,28 +17,25 @@
 <section>
 
 <div id="form_wrapper">
-  <form action="" method="GET" accept-charset="utf-8">
+  <form action="" method="POST" accept-charset="utf-8" target="_blank">
   <div id="input_wrapper">
     <span id="http_prefix">http://</span>
-    <input type="text" name="url" placeholder="type url here..." id="url_entry" autofocus><input id="go_button" type="submit" value="Go">
+    <input type="text" name="url" placeholder="type url here..." value="h5.eqxiu.com/s/0MA56gJZ" id="url_entry" autofocus><input id="go_button" type="submit" value="Go">
   </div>
   </form>
 </div>
 
-<div id="warning">
-Fair use: All content belongs to the original copyright holders, respectively.
-</div>
 
 </section>
 
 <footer class="secure">
-  {% if secure_url %}
+<!--   {% if secure_url %}
   <a href="{{secure_url}}">
   {% endif %}
   <img src="/static/{% if secure_url %}no{% endif %}lock.png" width="16" height="16">
   {% if secure_url %}not secure</a>
   {% else %}secure{% endif %}
-</footer>
+ --></footer>
 
 </body>
 </html>
