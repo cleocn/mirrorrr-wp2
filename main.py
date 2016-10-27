@@ -121,6 +121,7 @@ class MirrorHandler(BaseHandler):
         self.get(shorturl,base_url)
 
     def get(self,shorturl, base_url):
+
         # MirroredContent = mirrored_content.MirroredContent()
 
         if self.is_recursive_request():
@@ -128,7 +129,7 @@ class MirrorHandler(BaseHandler):
 
         assert base_url
 
-
+        logging.debug("url = %s%s",self.request.host,self.request.path)
         # Log the user-agent and referrer, to see who is linking to us.
         # logging.debug('User-Agent = "%s", Referrer = "%s"  ', self.request.user_agent, self.request.referer)
         logging.debug('Base_url = "%s", url = "%s"', base_url, self.request.url)

@@ -123,6 +123,7 @@ class MirroredContent(object):
                     content = content.replace('document.domain="qq.com";','void(0);');#微信的烂代码
                     content = content.replace('</body>','<script type="text/javascript" src="http://pingjs.qq.com/h5/stats.js" name="MTAH5" sid="500324497" cid="500331564" opts="{&quot;senseHash&quot;:false}" ></script></body>');#微信的烂代码
                     content = content.replace('location.href.indexOf("safe=0") == -1 ','false') #微信的蓝代码
+                    # content = content.replace('"2",','"3",') #eqx烂代码
                     content = content.replace("<head>","""<head>
                         <meta name="referrer" content="never">
                         <script>

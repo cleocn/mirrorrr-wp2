@@ -48,16 +48,16 @@ CSS_URL_START = r"(?i)\burl\((?P<quote>[\"']?)"
 
 REPLACEMENT_REGEXES = [
   (TAG_START + SAME_DIR_URL_REGEX,
-     "\g<tag>\g<equals>\g<quote>%(accessed_dir)s\g<url>"),
+     "\g<tag>\g<equals>\g<quote>/%(shorturl)s%(accessed_dir)s\g<url>"),
 
   (TAG_START + TRAVERSAL_URL_REGEX,
-     "\g<tag>\g<equals>\g<quote>%(accessed_dir)s/\g<relative>/\g<url>"),
+     "\g<tag>\g<equals>\g<quote>/%(shorturl)s%(accessed_dir)s/\g<relative>/\g<url>"),
 
   (TAG_START + BASE_RELATIVE_URL_REGEX,
-     "\g<tag>\g<equals>\g<quote>/%(base)s/\g<url>"),
+     "\g<tag>\g<equals>\g<quote>/%(shorturl)s/%(base)s/\g<url>"),
 
   (TAG_START + ROOT_DIR_URL_REGEX,
-     "\g<tag>\g<equals>\g<quote>/%(base)s/"),
+     "\g<tag>\g<equals>\g<quote>/%(shorturl)s/%(base)s/"),
 
   # Need this because HTML tags could end with '/>', which confuses the
   # tag-matching regex above, since that's the end-of-match signal.
